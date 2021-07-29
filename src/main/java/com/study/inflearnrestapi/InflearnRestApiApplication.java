@@ -9,5 +9,4 @@ public class InflearnRestApiApplication {
     public static void main(String[] args) {
         SpringApplication.run(InflearnRestApiApplication.class, args);
     }
-
 }
