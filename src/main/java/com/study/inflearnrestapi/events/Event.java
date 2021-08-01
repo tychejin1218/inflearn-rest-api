@@ -13,8 +13,8 @@ public class Event {
     private String description;
     private LocalDateTime beginEnrollmentDateTime;
     private LocalDateTime closeEnrollmentDateTime;
-    private LocalDateTime beginEventDateTime;
     private LocalDateTime endEventDateTime;
+    private LocalDateTime beginEventDateTime;
     private String location;
     private int basePrice;
     private int maxPrice;
