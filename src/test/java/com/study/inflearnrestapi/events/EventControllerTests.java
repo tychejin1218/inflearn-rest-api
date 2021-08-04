@@ -1,6 +1,7 @@
 package com.study.inflearnrestapi.events;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.study.inflearnrestapi.common.TestDescription;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,6 +31,7 @@ public class EventControllerTests {
     @Autowired
     ObjectMapper objectMapper;
 
+    @TestDescription("정상적으로 이벤트를 생성하는 테스트")
     @Test
     public void createEvent() throws Exception {
 
@@ -61,6 +63,7 @@ public class EventControllerTests {
                 .andExpect(jsonPath("eventStatus").value(EventStatus.DRAFT.name()));
     }
 
+    @TestDescription("입력 받을 수 없는 값을 사용한 경우에 에러가 발생하는 테스트")
     @Test
     public void createEvent_bad_request() throws Exception {
 
@@ -86,6 +89,43 @@ public class EventControllerTests {
                 .accept(MediaTypes.HAL_JSON_VALUE)
                 .content(objectMapper.writeValueAsString(event)))
                 .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @TestDescription("입력 값이 비어있는 경우에 에러가 발생하는 테스트")
+    @Test
+    public void createEvent_bad_request_empty_input() throws Exception {
+
+        EventDto eventDto = EventDto.builder().build();
+
+        this.mockMvc.perform(post("/api/events")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaTypes.HAL_JSON_VALUE)
+                .content(this.objectMapper.writeValueAsString(eventDto)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @TestDescription("입력 값이 잘못된 경우 에러가 발생하는 테스트")
+    @Test
+    public void createEvent_bad_request_wrong_input() throws Exception {
+
+        EventDto eventDto = EventDto.builder()
+                .name("name")
+                .description("description")
+                .beginEnrollmentDateTime(LocalDateTime.of(2021, 8, 31, 8, 30, 00))
+                .closeEnrollmentDateTime(LocalDateTime.of(2021, 8, 01, 5, 30, 00))
+                .beginEventDateTime(LocalDateTime.of(2021, 8, 31, 8, 30, 00))
+                .endEventDateTime(LocalDateTime.of(2021, 8, 01, 5, 30, 00))
+                .location("location")
+                .basePrice(2000)
+                .maxPrice(1000)
+                .limitOfEnrollment(1000)
+                .build();
+
+        this.mockMvc.perform(post("/api/events")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaTypes.HAL_JSON_VALUE)
+                .content(this.objectMapper.writeValueAsString(eventDto)))
                 .andExpect(status().isBadRequest());
     }
 }
