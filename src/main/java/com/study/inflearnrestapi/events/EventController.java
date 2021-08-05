@@ -2,10 +2,8 @@ package com.study.inflearnrestapi.events;
 
 import com.study.inflearnrestapi.common.ErrorsResource;
 import org.modelmapper.ModelMapper;
-import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
@@ -34,6 +32,7 @@ public class EventController {
 
     @PostMapping
     public ResponseEntity createEvent(@RequestBody @Valid EventDto eventDto, Errors errors) {
+
         if (errors.hasErrors()) {
             return badRequest(errors);
         }
@@ -44,20 +43,17 @@ public class EventController {
         }
 
         Event event = modelMapper.map(eventDto, Event.class);
-        Integer id = event.getId();
         event.update();
         Event newEvent = this.eventRepository.save(event);
 
-        WebMvcLinkBuilder selfLinkBuilder = linkTo(EventController.class).slash(id);
+        var selfLinkBuilder = linkTo(EventController.class).slash(newEvent.getId());
         URI createdUri = selfLinkBuilder.toUri();
+        EventResource eventResource = new EventResource(event);
+        eventResource.add(linkTo(EventController.class).withRel("query-events"));
+        eventResource.add(selfLinkBuilder.withRel("update-event"));
+        eventResource.add(new Link("/docs/index.html#resources-events-create").withRel("profile"));
 
-        EntityModel entityModel = EntityModel.of(event);
-        entityModel.add(linkTo(EventController.class).slash(id).withSelfRel());
-        entityModel.add(linkTo(EventController.class).withRel("query-events"));
-        entityModel.add(selfLinkBuilder.withRel("update-event"));
-        entityModel.add(Link.of("docs/index.html#resources-events-create").withRel("profile"));
-
-        return ResponseEntity.created(createdUri).body(entityModel);
+        return ResponseEntity.created(createdUri).body(eventResource);
     }
 
     private ResponseEntity badRequest(Errors errors) {
