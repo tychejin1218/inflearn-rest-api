@@ -5,6 +5,7 @@ import com.study.inflearnrestapi.common.RestDocsConfiguration;
 import com.study.inflearnrestapi.common.TestDescription;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -27,6 +28,7 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.docu
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -46,6 +48,9 @@ public class EventControllerTests {
 
     @Autowired
     EventRepository eventRepository;
+
+    @Autowired
+    ModelMapper modelMapper;
 
     @TestDescription("정상적으로 이벤트를 생성하는 테스트")
     @Test
@@ -241,7 +246,6 @@ public class EventControllerTests {
         ;
     }
 
-
     @TestDescription("없는 이벤트는 조회했을 때 404 응답받기")
     @Test
     public void getEvent404() throws Exception {
@@ -252,11 +256,95 @@ public class EventControllerTests {
         ;
     }
 
+    @TestDescription("이벤트를 정상적으로 수정하기")
+    @Test
+    public void updateEvent() throws Exception {
+        // Given
+        Event event = this.generateEvent(100);
+
+        EventDto eventDto = this.modelMapper.map(event, EventDto.class);
+        String eventName = "Updated Event";
+        eventDto.setName(eventName);
+
+        // When & Then
+        this.mockMvc.perform(put("/api/events/{id}", event.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(this.objectMapper.writeValueAsString(eventDto)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("name").value(eventName))
+                .andExpect(jsonPath("_links.self").exists())
+                .andDo(document("update-event"))
+        ;
+    }
+
+    @TestDescription("입력값이 비어있는 경우에 이벤트 수정 실패")
+    @Test
+    public void updateEvent400Empty() throws Exception {
+        // Given
+        Event event = this.generateEvent(100);
+
+        EventDto eventDto = new EventDto();
+
+        // When & Then
+        this.mockMvc.perform(put("/api/events/{id}", event.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(this.objectMapper.writeValueAsString(eventDto)))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+        ;
+    }
+
+    @TestDescription("입력값이 잘못된 경우에 이벤트 수정 실패")
+    @Test
+    public void updateEvent400Wrong() throws Exception {
+        // Given
+        Event event = this.generateEvent(100);
+
+        EventDto eventDto = this.modelMapper.map(event, EventDto.class);
+        eventDto.setBasePrice(20000);
+        eventDto.setMaxPrice(10000);
+
+        // When & Then
+        this.mockMvc.perform(put("/api/events/{id}", event.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(this.objectMapper.writeValueAsString(eventDto)))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+        ;
+    }
+
+    @TestDescription("존재하지 않는 이벤트 수정 실패")
+    @Test
+    public void updateEvent404() throws Exception {
+        // Given
+        Event event = this.generateEvent(100);
+        EventDto eventDto = this.modelMapper.map(event, EventDto.class);
+
+        // When & Then
+        this.mockMvc.perform(put("/api/events/99999")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(this.objectMapper.writeValueAsString(eventDto)))
+                .andDo(print())
+                .andExpect(status().isNotFound());
+    }
+
     private Event generateEvent(int i) {
 
         Event event = Event.builder()
                 .name("name_" + i)
                 .description("description_" + i)
+                .beginEnrollmentDateTime(LocalDateTime.of(2021, 8, 01, 8, 30, 00))
+                .closeEnrollmentDateTime(LocalDateTime.of(2021, 8, 31, 5, 30, 00))
+                .beginEventDateTime(LocalDateTime.of(2021, 8, 01, 8, 30, 00))
+                .endEventDateTime(LocalDateTime.of(2021, 8, 31, 5, 30, 00))
+                .location("location")
+                .basePrice(1000)
+                .maxPrice(2000)
+                .limitOfEnrollment(1000)
+                .free(false)
+                .offline(true)
+                .eventStatus(EventStatus.DRAFT)
                 .build();
 
         return this.eventRepository.save(event);
