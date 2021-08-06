@@ -1,6 +1,6 @@
 ## [인프런] 스프링 기반 REST API 개발
 - #### 강의 소개
-  - ##### 다양한 스프링 기술을 사용하여 Self-Descriptive Message와 HATEOAS(Hypermedia as the engine of application state)를 만족하는 REST API를 개발
+  - ##### 다양한 스프링 기술을 사용하여 Self-Descriptive Message와 HATEOAS를 만족하는 REST API를 개발
 
 - #### 교육 과정
   - ##### 1. REST API 및 프로젝트 소개
