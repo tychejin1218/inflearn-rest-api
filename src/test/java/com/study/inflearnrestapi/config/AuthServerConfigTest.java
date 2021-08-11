@@ -25,13 +25,14 @@ public class AuthServerConfigTest extends BaseControllerTest {
     @Test
     public void getAuthToken() throws Exception {
 
-        String username = "admin@email.com";
-        String password = "password1!";
+        String username = "admin01@email.com";
+        String password = "password01";
         Account account = Account.builder()
                 .email(username)
                 .password(password)
                 .roles(Set.of(AccountRole.ADMIN, AccountRole.USER))
                 .build();
+        this.accountService.saveAccount(account);
 
         String clientId = "myApp";
         String clientSecret = "password1!";
