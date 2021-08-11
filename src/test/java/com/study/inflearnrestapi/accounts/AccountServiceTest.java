@@ -35,7 +35,6 @@ public class AccountServiceTest {
                 .password(password)
                 .roles(Set.of(AccountRole.ADMIN, AccountRole.USER))
                 .build();
-
         this.accountRepository.save(account);
 
         // When
