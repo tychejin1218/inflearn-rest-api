@@ -1,13 +1,14 @@
 package com.study.inflearnrestapi.events;
 
+import com.study.inflearnrestapi.accounts.Account;
 import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
-@Builder @AllArgsConstructor @NoArgsConstructor
-@Getter @Setter @EqualsAndHashCode(of = "id")
 @Entity
+@Getter @Setter @EqualsAndHashCode(of = "id")
+@Builder @NoArgsConstructor @AllArgsConstructor
 public class Event {
 
     @Id @GeneratedValue
@@ -26,6 +27,8 @@ public class Event {
     private boolean free;
     @Enumerated(EnumType.STRING)
     private EventStatus eventStatus = EventStatus.DRAFT;
+    @ManyToOne
+    private Account manager;
 
     public void update(){
         // Update free
