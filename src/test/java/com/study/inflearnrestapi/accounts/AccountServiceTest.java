@@ -1,5 +1,6 @@
 package com.study.inflearnrestapi.accounts;
 
+import com.study.inflearnrestapi.common.AppProperties;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -36,18 +37,20 @@ public class AccountServiceTest {
     @Autowired
     PasswordEncoder passwordEncoder;
 
+    @Autowired
+    AppProperties appProperties;
+
     @Test
     public void findByUsername() {
 
         //Given
-        String password = "password01";
-        String username = "admin01@email.com";
+        String username = "test@email.com";
+        String password = "test";
         Account account = Account.builder()
                 .email(username)
                 .password(password)
                 .roles(Set.of(AccountRole.ADMIN, AccountRole.USER))
                 .build();
-
         this.accountService.saveAccount(account);
 
         // When
@@ -60,14 +63,14 @@ public class AccountServiceTest {
 
     @Test(expected = UsernameNotFoundException.class)
     public void findByUsernameFail01() {
-        String username = "fail01@email.com";
+        String username = "fail@email.com";
         accountService.loadUserByUsername(username);
     }
 
     @Test
     public void findByUsernameFail02() {
 
-        String username = "fail02@email.com";
+        String username = "fail@email.com";
         try {
             accountService.loadUserByUsername(username);
             fail("supposed to be failed");
@@ -80,7 +83,7 @@ public class AccountServiceTest {
     public void findByUsernameFail03() {
 
         // Expected
-        String username = "fail03@email.com";
+        String username = "fail@email.com";
         expectedException.expect(UsernameNotFoundException.class);
         expectedException.expectMessage(Matchers.containsString(username));
 

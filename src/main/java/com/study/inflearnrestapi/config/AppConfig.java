@@ -3,6 +3,7 @@ package com.study.inflearnrestapi.config;
 import com.study.inflearnrestapi.accounts.Account;
 import com.study.inflearnrestapi.accounts.AccountRole;
 import com.study.inflearnrestapi.accounts.AccountService;
+import com.study.inflearnrestapi.common.AppProperties;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
@@ -18,7 +19,7 @@ import java.util.Set;
 public class AppConfig {
 
     @Bean
-    public ModelMapper modelMapper(){
+    public ModelMapper modelMapper() {
         return new ModelMapper();
     }
 
@@ -29,19 +30,31 @@ public class AppConfig {
 
     @Bean
     public ApplicationRunner applicationRunner() {
+
         return new ApplicationRunner() {
 
             @Autowired
             AccountService accountService;
 
+            @Autowired
+            AppProperties appProperties;
+
             @Override
             public void run(ApplicationArguments args) throws Exception {
+
                 Account admin = Account.builder()
-                        .email("admin@email.com")
-                        .password("password")
+                        .email(appProperties.getAdminUsername())
+                        .password(appProperties.getAdminPassword())
                         .roles(Set.of(AccountRole.ADMIN, AccountRole.USER))
                         .build();
                 accountService.saveAccount(admin);
+
+                Account user = Account.builder()
+                        .email(appProperties.getUserUsername())
+                        .password(appProperties.getUserPassword())
+                        .roles(Set.of(AccountRole.USER))
+                        .build();
+                accountService.saveAccount(user);
             }
         };
     }

@@ -4,6 +4,7 @@ import com.study.inflearnrestapi.accounts.Account;
 import com.study.inflearnrestapi.accounts.AccountRepository;
 import com.study.inflearnrestapi.accounts.AccountRole;
 import com.study.inflearnrestapi.accounts.AccountService;
+import com.study.inflearnrestapi.common.AppProperties;
 import com.study.inflearnrestapi.common.BaseControllerTest;
 import com.study.inflearnrestapi.common.TestDescription;
 import org.junit.Before;
@@ -39,6 +40,9 @@ public class EventControllerTests extends BaseControllerTest {
 
     @Autowired
     AccountRepository accountRepository;
+
+    @Autowired
+    AppProperties appProperties;
 
     @Before
     public void setUp() {
@@ -357,22 +361,17 @@ public class EventControllerTests extends BaseControllerTest {
 
     public String getAccessToken(boolean needToCreateAccount) throws Exception {
 
-        String username = "admin01@email.com";
-        String password = "password01";
         Account account = Account.builder()
-                .email(username)
-                .password(password)
+                .email(appProperties.getAdminUsername())
+                .password(appProperties.getAdminPassword())
                 .roles(Set.of(AccountRole.ADMIN, AccountRole.USER))
                 .build();
         this.accountService.saveAccount(account);
 
-        String clientId = "myApp";
-        String clientSecret = "password1!";
-
         ResultActions perform = this.mockMvc.perform(post("/oauth/token")
-                .with(httpBasic(clientId, clientSecret))
-                .param("username", username)
-                .param("password", password)
+                .with(httpBasic(appProperties.getClientId(), appProperties.getClientSecret()))
+                .param("username", appProperties.getAdminUsername())
+                .param("password", appProperties.getAdminPassword())
                 .param("grant_type", "password"));
 
         var responseBody = perform.andReturn().getResponse().getContentAsString();
