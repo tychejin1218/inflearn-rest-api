@@ -3,6 +3,7 @@ package com.study.inflearnrestapi.config;
 import com.study.inflearnrestapi.accounts.Account;
 import com.study.inflearnrestapi.accounts.AccountRole;
 import com.study.inflearnrestapi.accounts.AccountService;
+import com.study.inflearnrestapi.common.AppProperties;
 import com.study.inflearnrestapi.common.BaseControllerTest;
 import com.study.inflearnrestapi.common.TestDescription;
 import org.junit.Test;
@@ -21,12 +22,16 @@ public class AuthServerConfigTest extends BaseControllerTest {
     @Autowired
     AccountService accountService;
 
+    @Autowired
+    AppProperties appProperties;
+
     @TestDescription("인증 토큰을 발급 받는 테스트")
     @Test
     public void getAuthToken() throws Exception {
 
-        String username = "admin01@email.com";
-        String password = "password01";
+        //Given
+        String username = "test@email.com";
+        String password = "test";
         Account account = Account.builder()
                 .email(username)
                 .password(password)
@@ -34,11 +39,9 @@ public class AuthServerConfigTest extends BaseControllerTest {
                 .build();
         this.accountService.saveAccount(account);
 
-        String clientId = "myApp";
-        String clientSecret = "password1!";
-
+        // When & Then
         this.mockMvc.perform(post("/oauth/token")
-                .with(httpBasic(clientId, clientSecret))
+                .with(httpBasic(appProperties.getClientId(), appProperties.getClientSecret()))
                 .param("username", username)
                 .param("password", password)
                 .param("grant_type", "password"))

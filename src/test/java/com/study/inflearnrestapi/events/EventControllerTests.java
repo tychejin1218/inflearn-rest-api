@@ -4,6 +4,7 @@ import com.study.inflearnrestapi.accounts.Account;
 import com.study.inflearnrestapi.accounts.AccountRepository;
 import com.study.inflearnrestapi.accounts.AccountRole;
 import com.study.inflearnrestapi.accounts.AccountService;
+import com.study.inflearnrestapi.common.AppProperties;
 import com.study.inflearnrestapi.common.BaseControllerTest;
 import com.study.inflearnrestapi.common.TestDescription;
 import org.junit.Before;
@@ -39,6 +40,9 @@ public class EventControllerTests extends BaseControllerTest {
 
     @Autowired
     AccountRepository accountRepository;
+
+    @Autowired
+    AppProperties appProperties;
 
     @Before
     public void setUp() {
@@ -221,6 +225,29 @@ public class EventControllerTests extends BaseControllerTest {
                 .andExpect(jsonPath("_embedded.eventList[0]._links.self").exists())
                 .andExpect(jsonPath("_links.self").exists())
                 .andExpect(jsonPath("_links.profile").exists())
+                .andDo(document("query-events"))
+        ;
+    }
+
+    @TestDescription("30개의 이벤트를 10개씩 두번째 페이지 조회하기_인증")
+    @Test
+    public void queryEventsWithAuthentication() throws Exception {
+
+        // Given
+        IntStream.range(0, 30).forEach(this::generateEvent);
+
+        // When & Then
+        this.mockMvc.perform(get("/api/events")
+                .header(HttpHeaders.AUTHORIZATION, getBearerToken(true))
+                .param("page", "1")
+                .param("size", "10")
+                .param("sort", "name,DESC"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("page").exists())
+                .andExpect(jsonPath("_embedded.eventList[0]._links.self").exists())
+                .andExpect(jsonPath("_links.self").exists())
+                .andExpect(jsonPath("_links.profile").exists())
                 .andExpect(jsonPath("_links.create-event").exists())
                 .andDo(document("query-events"))
         ;
@@ -357,22 +384,17 @@ public class EventControllerTests extends BaseControllerTest {
 
     public String getAccessToken(boolean needToCreateAccount) throws Exception {
 
-        String username = "admin01@email.com";
-        String password = "password01";
         Account account = Account.builder()
-                .email(username)
-                .password(password)
+                .email(appProperties.getAdminUsername())
+                .password(appProperties.getAdminPassword())
                 .roles(Set.of(AccountRole.ADMIN, AccountRole.USER))
                 .build();
         this.accountService.saveAccount(account);
 
-        String clientId = "myApp";
-        String clientSecret = "password1!";
-
         ResultActions perform = this.mockMvc.perform(post("/oauth/token")
-                .with(httpBasic(clientId, clientSecret))
-                .param("username", username)
-                .param("password", password)
+                .with(httpBasic(appProperties.getClientId(), appProperties.getClientSecret()))
+                .param("username", appProperties.getAdminUsername())
+                .param("password", appProperties.getAdminPassword())
                 .param("grant_type", "password"));
 
         var responseBody = perform.andReturn().getResponse().getContentAsString();
