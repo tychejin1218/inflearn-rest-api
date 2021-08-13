@@ -5,10 +5,10 @@ import com.study.inflearnrestapi.accounts.AccountRepository;
 import com.study.inflearnrestapi.accounts.AccountRole;
 import com.study.inflearnrestapi.accounts.AccountService;
 import com.study.inflearnrestapi.common.AppProperties;
-import com.study.inflearnrestapi.common.BaseControllerTest;
-import com.study.inflearnrestapi.common.TestDescription;
-import org.junit.Before;
-import org.junit.Test;
+import com.study.inflearnrestapi.common.BaseTest;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
@@ -30,7 +30,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-public class EventControllerTests extends BaseControllerTest {
+public class EventControllerTests extends BaseTest {
 
     @Autowired
     EventRepository eventRepository;
@@ -44,13 +44,13 @@ public class EventControllerTests extends BaseControllerTest {
     @Autowired
     AppProperties appProperties;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         this.eventRepository.deleteAll();
         this.accountRepository.deleteAll();
     }
 
-    @TestDescription("정상적으로 이벤트를 생성하는 테스트")
+    @DisplayName("정상적으로 이벤트를 생성하는 테스트")
     @Test
     public void createEvent() throws Exception {
 
@@ -131,7 +131,7 @@ public class EventControllerTests extends BaseControllerTest {
                 ));
     }
 
-    @TestDescription("입력 받을 수 없는 값을 사용한 경우에 에러가 발생하는 테스트")
+    @DisplayName("입력 받을 수 없는 값을 사용한 경우에 에러가 발생하는 테스트")
     @Test
     public void createEvent_bad_request() throws Exception {
 
@@ -161,7 +161,7 @@ public class EventControllerTests extends BaseControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
-    @TestDescription("입력 값이 비어있는 경우에 에러가 발생하는 테스트")
+    @DisplayName("입력 값이 비어있는 경우에 에러가 발생하는 테스트")
     @Test
     public void createEvent_bad_request_empty_input() throws Exception {
 
@@ -175,7 +175,7 @@ public class EventControllerTests extends BaseControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
-    @TestDescription("입력 값이 잘못된 경우 에러가 발생하는 테스트")
+    @DisplayName("입력 값이 잘못된 경우 에러가 발생하는 테스트")
     @Test
     public void createEvent_bad_request_wrong_input() throws Exception {
 
@@ -205,7 +205,7 @@ public class EventControllerTests extends BaseControllerTest {
         ;
     }
 
-    @TestDescription("30개의 이벤트를 10개씩 두번째 페이지 조회하기")
+    @DisplayName("30개의 이벤트를 10개씩 두번째 페이지 조회하기")
     @Test
     public void queryEvents() throws Exception {
 
@@ -229,7 +229,7 @@ public class EventControllerTests extends BaseControllerTest {
         ;
     }
 
-    @TestDescription("30개의 이벤트를 10개씩 두번째 페이지 조회하기_인증")
+    @DisplayName("30개의 이벤트를 10개씩 두번째 페이지 조회하기_인증")
     @Test
     public void queryEventsWithAuthentication() throws Exception {
 
@@ -253,7 +253,7 @@ public class EventControllerTests extends BaseControllerTest {
         ;
     }
 
-    @TestDescription("기존의 이벤트를 하나 조회하기")
+    @DisplayName("기존의 이벤트를 하나 조회하기")
     @Test
     public void getEvent() throws Exception {
 
@@ -271,7 +271,7 @@ public class EventControllerTests extends BaseControllerTest {
         ;
     }
 
-    @TestDescription("없는 이벤트는 조회했을 때 404 응답받기")
+    @DisplayName("없는 이벤트는 조회했을 때 404 응답받기")
     @Test
     public void getEvent404() throws Exception {
 
@@ -281,7 +281,7 @@ public class EventControllerTests extends BaseControllerTest {
         ;
     }
 
-    @TestDescription("이벤트를 정상적으로 수정하기")
+    @DisplayName("이벤트를 정상적으로 수정하기")
     @Test
     public void updateEvent() throws Exception {
         // Given
@@ -305,7 +305,7 @@ public class EventControllerTests extends BaseControllerTest {
         ;
     }
 
-    @TestDescription("입력값이 비어있는 경우에 이벤트 수정 실패")
+    @DisplayName("입력값이 비어있는 경우에 이벤트 수정 실패")
     @Test
     public void updateEvent400Empty() throws Exception {
         // Given
@@ -323,7 +323,7 @@ public class EventControllerTests extends BaseControllerTest {
         ;
     }
 
-    @TestDescription("입력값이 잘못된 경우에 이벤트 수정 실패")
+    @DisplayName("입력값이 잘못된 경우에 이벤트 수정 실패")
     @Test
     public void updateEvent400Wrong() throws Exception {
         // Given
@@ -343,7 +343,7 @@ public class EventControllerTests extends BaseControllerTest {
         ;
     }
 
-    @TestDescription("존재하지 않는 이벤트 수정 실패")
+    @DisplayName("존재하지 않는 이벤트 수정 실패")
     @Test
     public void updateEvent404() throws Exception {
         // Given
