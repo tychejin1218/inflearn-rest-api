@@ -258,7 +258,8 @@ public class EventControllerTests extends BaseControllerTest {
     public void getEvent() throws Exception {
 
         //Given
-        Event event = this.generateEvent(100);
+        Account account = this.createAccount();
+        Event event = this.generateEvent(100, account);
 
         //When & Then
         this.mockMvc.perform(get("/api/events/{id}", event.getId()))
@@ -284,7 +285,8 @@ public class EventControllerTests extends BaseControllerTest {
     @Test
     public void updateEvent() throws Exception {
         // Given
-        Event event = this.generateEvent(100);
+        Account account = this.createAccount();
+        Event event = this.generateEvent(100, account);
 
         EventDto eventDto = this.modelMapper.map(event, EventDto.class);
         String eventName = "Updated Event";
@@ -292,7 +294,7 @@ public class EventControllerTests extends BaseControllerTest {
 
         // When & Then
         this.mockMvc.perform(put("/api/events/{id}", event.getId())
-                .header(HttpHeaders.AUTHORIZATION, getBearerToken(true))
+                .header(HttpHeaders.AUTHORIZATION, getBearerToken(false))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(this.objectMapper.writeValueAsString(eventDto)))
                 .andDo(print())
@@ -357,11 +359,21 @@ public class EventControllerTests extends BaseControllerTest {
                 .andExpect(status().isNotFound());
     }
 
-    private Event generateEvent(int i) {
+    private Event generateEvent(int index, Account account) {
+        Event event = buildEvent(index);
+        event.setManager(account);
+        return this.eventRepository.save(event);
+    }
 
-        Event event = Event.builder()
-                .name("name_" + i)
-                .description("description_" + i)
+    private Event generateEvent(int index) {
+        Event event = buildEvent(index);
+        return this.eventRepository.save(event);
+    }
+
+    private Event buildEvent(int index) {
+        return Event.builder()
+                .name("name_" + index)
+                .description("description_" + index)
                 .beginEnrollmentDateTime(LocalDateTime.of(2021, 8, 01, 8, 30, 00))
                 .closeEnrollmentDateTime(LocalDateTime.of(2021, 8, 31, 5, 30, 00))
                 .beginEventDateTime(LocalDateTime.of(2021, 8, 01, 8, 30, 00))
@@ -374,8 +386,6 @@ public class EventControllerTests extends BaseControllerTest {
                 .offline(true)
                 .eventStatus(EventStatus.DRAFT)
                 .build();
-
-        return this.eventRepository.save(event);
     }
 
     private String getBearerToken(boolean needToCreateAccount) throws Exception {
@@ -384,12 +394,9 @@ public class EventControllerTests extends BaseControllerTest {
 
     public String getAccessToken(boolean needToCreateAccount) throws Exception {
 
-        Account account = Account.builder()
-                .email(appProperties.getAdminUsername())
-                .password(appProperties.getAdminPassword())
-                .roles(Set.of(AccountRole.ADMIN, AccountRole.USER))
-                .build();
-        this.accountService.saveAccount(account);
+        if (needToCreateAccount) {
+            createAccount();
+        }
 
         ResultActions perform = this.mockMvc.perform(post("/oauth/token")
                 .with(httpBasic(appProperties.getClientId(), appProperties.getClientSecret()))
@@ -400,5 +407,14 @@ public class EventControllerTests extends BaseControllerTest {
         var responseBody = perform.andReturn().getResponse().getContentAsString();
         Jackson2JsonParser parser = new Jackson2JsonParser();
         return parser.parseMap(responseBody).get("access_token").toString();
+    }
+
+    public Account createAccount(){
+        Account account = Account.builder()
+                .email(appProperties.getAdminUsername())
+                .password(appProperties.getAdminPassword())
+                .roles(Set.of(AccountRole.ADMIN, AccountRole.USER))
+                .build();
+        return this.accountService.saveAccount(account);
     }
 }
